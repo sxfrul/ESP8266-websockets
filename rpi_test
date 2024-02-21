@@ -1,0 +1,24 @@
+import asyncio
+import websockets
+
+async def homeAutomation():
+    uri = "ws://172.20.10.7:80"  # Replace <nodeMCU_IP_address> with NodeMCU's IP address
+    reply = input("Enter command (e.g., 'led1:on', 'led1:off', etc.): ")
+
+    try:
+        async with websockets.connect(uri) as websocket:
+            if "led1:on" in reply or "led1:off" in reply \
+               or "led2:on" in reply or "led2:off" in reply \
+               or "led3:on" in reply or "led3:off" in reply:
+                await websocket.send(reply)
+            else:
+                print("Invalid command entered.")
+    except Exception as e:
+        print(f"Failed to connect: {e}")
+
+while True:
+    selection = input("1 for light control, 2 to exit: ")
+    if selection == "1":
+        asyncio.run(homeAutomation())
+    else:
+        break
