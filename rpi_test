@@ -12,13 +12,16 @@ async def homeAutomation():
                or "led3:on" in reply or "led3:off" in reply:
                 await websocket.send(reply)
             else:
-                print("Invalid command entered.")
+                pass
     except Exception as e:
         print(f"Failed to connect: {e}")
+
+async def main():
+    await homeAutomation()
 
 while True:
     selection = input("1 for light control, 2 to exit: ")
     if selection == "1":
-        asyncio.run(homeAutomation())
+        asyncio.run(main())
     else:
         break
