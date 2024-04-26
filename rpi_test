@@ -7,21 +7,29 @@ async def homeAutomation():
 
     try:
         async with websockets.connect(uri) as websocket:
-            if "led1:on" in reply or "led1:off" in reply \
-               or "led2:on" in reply or "led2:off" in reply \
-               or "led3:on" in reply or "led3:off" in reply:
-                await websocket.send(reply)
+            if "kitchen" in reply and "on" in reply:
+                await websocket.send("led1:on")
+            elif "kitchen" in reply and "off" in reply:
+                await websocket.send("led1:off")
+            if "bedroom" in reply and "on" in reply:
+                await websocket.send("led2:on")
+            elif "bedroom" in reply and "off" in reply:
+                await websocket.send("led2:off")
+            if "toilet" in reply and "on" in reply:
+                await websocket.send("led3:on")
+            elif "toilet" in reply and "off" in reply:
+                await websocket.send("led3:off")
             else:
                 pass
     except Exception as e:
         print(f"Failed to connect: {e}")
 
-async def main():
+async def async_main():
     await homeAutomation()
 
 while True:
     selection = input("1 for light control, 2 to exit: ")
     if selection == "1":
-        asyncio.run(main())
+        asyncio.run(async_main())
     else:
         break

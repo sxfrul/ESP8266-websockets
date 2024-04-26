@@ -1,0 +1,106 @@
+#include <ArduinoWebsockets.h>
+#include <ESP8266WiFi.h>
+
+const char* ssid = "saf"; //Enter SSID
+const char* password = "barkbarkwoofwoof"; //Enter Password
+
+using namespace websockets;
+
+WebsocketsServer server;
+
+// LED pins
+const int led1Pin = D3;
+const int led2Pin = D2;
+const int led3Pin = D1;
+const int onBoardLedPin = D0;
+
+void setup() {
+  pinMode(led1Pin, OUTPUT);
+  pinMode(led2Pin, OUTPUT);
+  pinMode(led3Pin, OUTPUT);
+  pinMode(onBoardLedPin, OUTPUT);
+
+  Serial.begin(9600);
+  // Connect to wifi
+  WiFi.begin(ssid, password);
+
+  // Wait some time to connect to wifi
+  for(int i = 0; i < 15 && WiFi.status() != WL_CONNECTED; i++) {
+      Serial.print(".");
+      digitalWrite(led1Pin, HIGH);
+      delay(300);
+      digitalWrite(led2Pin, HIGH);
+      delay(300);
+      digitalWrite(led3Pin, HIGH);
+      delay(300);
+      digitalWrite(led1Pin, LOW);
+      digitalWrite(led2Pin, LOW);
+      digitalWrite(led3Pin, LOW);
+      delay(300);
+  }
+
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  IPAddress theIP = WiFi.localIP();
+
+  if (theIP[0] == 0) {
+    Serial.println("Server is not available");
+    for (int loop = 0; loop < 10; loop++) {
+      digitalWrite(onBoardLedPin, HIGH);
+      delay(800);
+      digitalWrite(onBoardLedPin, LOW);
+      delay(800);
+    }
+  }
+  else {
+    for (int i = 0; i < 3; i++) {
+      digitalWrite(led1Pin, HIGH);
+      digitalWrite(led2Pin, HIGH);
+      digitalWrite(led3Pin, HIGH);
+      delay(800);
+      digitalWrite(led1Pin, LOW);
+      digitalWrite(led2Pin, LOW);
+      digitalWrite(led3Pin, LOW);
+      delay(800);
+    }
+  }
+
+  server.listen(80);
+}
+
+void loop() {
+  WebsocketsClient client = server.accept();
+  if(client.available()) {
+    WebsocketsMessage msg = client.readBlocking();
+
+    // log
+    Serial.print("Got Message: ");
+    String command = msg.data();
+    Serial.println(msg.data());
+
+    if (command == "led1:on") {
+      digitalWrite(led1Pin, HIGH);
+    } else if (command == "led1:off") {
+      digitalWrite(led1Pin, LOW);
+    } else if (command == "led2:on") {
+      digitalWrite(led2Pin, HIGH);
+    } else if (command == "led2:off") {
+      digitalWrite(led2Pin, LOW);
+    } else if (command == "led3:on") {
+      digitalWrite(led3Pin, HIGH);
+    } else if (command == "led3:off") {
+      digitalWrite(led3Pin, LOW);
+    }
+
+    // return echo
+    client.send("Echo: " + msg.data());
+
+    // close the connection
+    client.close();
+  }
+  
+  delay(1000);
+}
